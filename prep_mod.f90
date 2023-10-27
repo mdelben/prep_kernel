@@ -60,7 +60,7 @@
 
         if ( peinfo%algo == OMP_TARGET_ALGO .and. peinfo%full_offload ) then
 
-          if ( peinfo%inode == 0 .and. do_write == .true. ) then
+          if ( peinfo%inode == 0 .and. do_write ) then
             write(*,*) 'Full OffLoad Prep'
             do_write = .false.
           end if
@@ -108,7 +108,7 @@
 
         else
 
-          if ( peinfo%inode == 0 .and. do_write == .true. ) then
+          if ( peinfo%inode == 0 .and. do_write ) then
             write(*,*) 'Submat (CPU) Prep'
             do_write = .false.
           end if
