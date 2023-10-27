@@ -59,13 +59,10 @@
      if (peinfo%algo == OMP_TARGET_ALGO ) then
        !$omp target exit data map(delete: chilocal, gmetempr, gmetempc)
        if ( peinfo%full_offload ) then
-#ifdef ONE_API
          call accel_exit_data_map_delete_r6(pol%gme)
-#endif
          !$omp target exit data map(delete: scal%nprd, scal%npcd, scal%imyrowd, scal%imycold)
 #ifdef NVHPC
          !$omp target exit data map(delete: scal)
-         !$omp target exit data map(delete: pol%gme)
          !$omp target exit data map(delete: pol)
 #endif
          !$omp target exit data map(delete: indt)
