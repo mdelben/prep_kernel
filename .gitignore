@@ -1,0 +1,12 @@
+# Arch file
+arch.mk
+
+# Executables
+**.x
+
+# Compilation byproducts
+**.o
+**.a
+**.p.f
+**.mod
+**.modmic
