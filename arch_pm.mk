@@ -1,3 +1,5 @@
+# module swap PrgEnv-gnu PrgEnv-nvhpc ; module load cray-hdf5-parallel ; module load cray-fftw ; module load cray-libsci ; module load python
+
 DFLAGS=-DNVHPC
 
 FC = ftn 
