@@ -8,6 +8,7 @@ include "mkl_omp_offload.f90"
          use cublas
          use cudafor
 #elif defined(HIP_API)
+         use ISO_C_BINDING
          use hipfort
          use hipfort_hipblas
 #elif defined(ONE_API)
@@ -67,6 +68,26 @@ include "mkl_omp_offload.f90"
          type(peinf) :: peinfo
 
         contains
+
+#if defined(HIP_API)
+         function hipblas_t2op(tran) result(ret)
+             use hipfort_hipblas_enums
+             implicit none
+             integer(kind(HIPBLAS_OP_N)) :: ret
+             character                   :: tran
+             !
+             select case (TRIM(tran))
+               case ('N','n')
+                 ret = HIPBLAS_OP_N
+               case ('T','t')
+                 ret = HIPBLAS_OP_T
+               case ('C','c')
+                 ret = HIPBLAS_OP_C
+               case default
+                 STOP "HIP BLAS operator not mapper "
+             end select
+         end function
+#endif
 
          subroutine init_mpi()
            implicit none
@@ -250,19 +271,31 @@ include "mkl_omp_offload.f90"
            integer :: algo, ierr
 #ifdef NVHPC
            type(cublasHandle) :: accel_blas_handle
+#elif defined(HIP_API)
+           type(c_ptr)        :: accel_blas_handle = c_null_ptr
 #endif
 
            if (algo == OMP_TARGET_ALGO) then
              if (peinfo%inode == 0) write(*,*) 'GPU ZGEMM'
 #ifdef NVHPC
-        ierr = cublasCreate(accel_blas_handle)
-        !$omp target data use_device_ptr(a, b, c)
-        call cublasZgemm(transa, transb, &
-                         m, n, k, &
-                         alpha, a, lda, b, ldb, &
-                         beta, c, ldc)
-        !$omp end target data
-        ierr = cublasDestroy(accel_blas_handle)
+               ierr = cublasCreate(accel_blas_handle)
+               !$omp target data use_device_ptr(a, b, c)
+               call cublasZgemm(transa, transb, &
+                                m, n, k, &
+                                alpha, a, lda, b, ldb, &
+                                beta, c, ldc)
+               !$omp end target data
+               ierr = cublasDestroy(accel_blas_handle)
+#elif defined(HIP_API)
+               ierr = hipblasCreate(accel_blas_handle)
+               !$omp target data use_device_ptr(a, b, c)
+               ierr = hipblasZgemm(accel_blas_handle, &
+                                   hipblas_t2op(transa), hipblas_t2op(transb), &
+                                   m, n, k, &
+                                   alpha, c_loc(a), lda, c_loc(b), ldb, &
+                                   beta, c_loc(c), ldc)
+               !$omp end target data
+               ierr = hipblasDestroy(accel_blas_handle)
 #elif ONE_API
              !$omp target data use_device_ptr(a, b, c)
              !$omp target variant dispatch

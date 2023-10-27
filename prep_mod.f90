@@ -42,7 +42,10 @@
     integer, allocatable :: tmprowindex(:),tmpcolindex(:)
     double complex, allocatable :: tmprowph(:),tmpcolph(:)
     integer :: irk, iv, j, it, icurr, itot, mytot
+    integer :: pol_nfreq_group
     logical :: do_write
+
+    pol_nfreq_group = pol%nfreq_group
 
     ALLOCATE(tmprowindex (scal%nprd(ipe)))
     ALLOCATE(tmpcolindex (scal%npcd(ipe)))
@@ -93,13 +96,13 @@
               do icurr=1,scal%nprd(ipe)
                 gmetempr(icurr,mytot)=polgme( &
                   tmprowindex(icurr),j,iv, &
-                  ispin,irk,pol%nfreq_group)* &
+                  ispin,irk,pol_nfreq_group)* &
                   tmprowph(icurr)
               enddo
 
               do icurr=1,scal%npcd(ipe)
                 gmetempc(icurr,mytot)= &
-                  CONJG(polgme(tmpcolindex(icurr),j,iv,ispin,irk,pol%nfreq_group)*tmpcolph(icurr))
+                  CONJG(polgme(tmpcolindex(icurr),j,iv,ispin,irk,pol_nfreq_group)*tmpcolph(icurr))
               enddo
 
             enddo ! j
@@ -133,13 +136,13 @@
               do icurr=1,scal%nprd(ipe)
                 gmetempr(icurr,mytot)=polgme( &
                   tmprowindex(icurr),j,iv, &
-                  ispin,irk,pol%nfreq_group)* &
+                  ispin,irk,pol_nfreq_group)* &
                   tmprowph(icurr)
               enddo
 
               do icurr=1,scal%npcd(ipe)
                 gmetempc(icurr,mytot)= &
-                  CONJG(polgme(tmpcolindex(icurr),j,iv,ispin,irk,pol%nfreq_group)*tmpcolph(icurr))
+                  CONJG(polgme(tmpcolindex(icurr),j,iv,ispin,irk,pol_nfreq_group)*tmpcolph(icurr))
               enddo ! icurr
             enddo ! j
           enddo ! iv
