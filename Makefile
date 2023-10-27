@@ -23,4 +23,4 @@ $(GOAL) : $(OBJS)
 	$(LINKER) $(FFLAGS) -o $(GOAL) $(OBJS) $(LIBS)
 
 clean :
-	rm -f *.o *.mod *.modmic
+	rm -f *.o *.mod *.modmic prep.x
