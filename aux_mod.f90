@@ -1,8 +1,16 @@
+#ifdef ONE_API
 include "mkl_omp_offload.f90"
+#endif
         module aux_mod
          use mpi
          use omp_lib
+#ifdef ONE_API
          use onemkl_blas_omp_offload_lp64
+#endif
+#ifdef NVHPC
+         use cublas
+         use cudafor
+#endif
          implicit none
 
          public :: peinfo, init_mpi, clean_mpi, scalapack, polarizability
@@ -236,10 +244,23 @@ include "mkl_omp_offload.f90"
            integer :: m, n, k, lda, ldb, ldc
            double complex :: alpha, beta
            double complex :: a(:,:), b(:,:), c(:,:)
-           integer :: algo
-      
+           integer :: algo, ierr
+#ifdef NVHPC
+           type(cublasHandle) :: accel_blas_handle
+#endif
+
            if (algo == OMP_TARGET_ALGO) then
              if (peinfo%inode == 0) write(*,*) 'GPU ZGEMM'
+#ifdef NVHPC
+        ierr = cublasCreate(accel_blas_handle)
+        !$omp target data use_device_ptr(a, b, c)
+        call cublasZgemm(transa, transb, &
+                         m, n, k, &
+                         alpha, a, lda, b, ldb, &
+                         beta, c, ldc)
+        !$omp end target data
+        ierr = cublasDestroy(accel_blas_handle)
+#elif ONE_API
              !$omp target data use_device_ptr(a, b, c)
              !$omp target variant dispatch
              call zgemm(transa, transb, &
@@ -251,6 +272,7 @@ include "mkl_omp_offload.f90"
                         c, ldc)
              !$omp end target variant dispatch
              !$omp end target data
+#endif
            else if (algo == CPU_ALGO) then
              if (peinfo%inode == 0) write(*,*) 'CPU ZGEMM'
              call zgemm(transa, transb, &

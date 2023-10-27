@@ -27,7 +27,14 @@
        if(peinfo%inode == 0) write(*,*) 'Copy data to GPU'
        !$omp target enter data map (to: chilocal, gmetempr, gmetempc)
        if ( peinfo%full_offload ) then
+#ifdef ONE_API
          call accel_enter_data_map_to_r6(pol%gme)
+#endif
+#ifdef NVHPC
+         !$omp target enter data map (to: pol)
+         !$omp target enter data map (to: pol%gme)
+         !$omp target enter data map (to: scal)
+#endif
          !$omp target enter data map (to: scal%nprd, scal%npcd, scal%imyrowd, scal%imycold)
          !$omp target enter data map (to: indt)
          !$omp target enter data map (to: pht)
@@ -55,8 +62,15 @@
      if (peinfo%algo == OMP_TARGET_ALGO ) then
        !$omp target exit data map(delete: chilocal, gmetempr, gmetempc)
        if ( peinfo%full_offload ) then
+#ifdef ONE_API
          call accel_exit_data_map_delete_r6(pol%gme)
+#endif
          !$omp target exit data map(delete: scal%nprd, scal%npcd, scal%imyrowd, scal%imycold)
+#ifdef NVHPC
+         !$omp target exit data map(delete: scal)
+         !$omp target exit data map(delete: pol%gme)
+         !$omp target exit data map(delete: pol)
+#endif
          !$omp target exit data map(delete: indt)
          !$omp target exit data map(delete: pht)
          !$omp target exit data map(delete: peinfo)
