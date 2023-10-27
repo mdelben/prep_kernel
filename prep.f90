@@ -27,14 +27,11 @@
        if(peinfo%inode == 0) write(*,*) 'Copy data to GPU'
        !$omp target enter data map (to: chilocal, gmetempr, gmetempc)
        if ( peinfo%full_offload ) then
-#ifdef ONE_API
-         call accel_enter_data_map_to_r6(pol%gme)
-#endif
 #ifdef NVHPC
          !$omp target enter data map (to: pol)
-         !$omp target enter data map (to: pol%gme)
          !$omp target enter data map (to: scal)
 #endif
+         call accel_enter_data_map_to_r6(pol%gme)
          !$omp target enter data map (to: scal%nprd, scal%npcd, scal%imyrowd, scal%imycold)
          !$omp target enter data map (to: indt)
          !$omp target enter data map (to: pht)

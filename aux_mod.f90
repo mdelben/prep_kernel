@@ -4,13 +4,16 @@ include "mkl_omp_offload.f90"
         module aux_mod
          use mpi
          use omp_lib
-#ifdef ONE_API
-         use onemkl_blas_omp_offload_lp64
-#endif
 #ifdef NVHPC
          use cublas
          use cudafor
+#elif defined(HIP_API)
+         use hipfort
+         use hipfort_hipblas
+#elif defined(ONE_API)
+         use onemkl_blas_omp_offload_lp64
 #endif
+
          implicit none
 
          public :: peinfo, init_mpi, clean_mpi, scalapack, polarizability
